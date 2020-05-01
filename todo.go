@@ -20,7 +20,7 @@ func (l *List) Add(task string) {
 // Complete marks a ToDo item as complete at index i.
 func (l *List) Complete(i int) error {
 	if i <= 0 || i > len(*l) {
-		return fmt.Errorf("item %d does not exist,"+
+		return fmt.Errorf("item %d does not exist, "+
 			"it was not marked as complete", i)
 	}
 	(*l)[i-1].Complete = true
@@ -31,7 +31,7 @@ func (l *List) Complete(i int) error {
 // Delete removes a ToDo item from the list at index i.
 func (l *List) Delete(i int) error {
 	if i <= 0 || i > len(*l) {
-		return fmt.Errorf("item %d does not exit,"+
+		return fmt.Errorf("item %d does not exist, "+
 			"delete failed", i)
 	}
 	lst := *l
