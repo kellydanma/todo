@@ -1,7 +1,10 @@
 package todo
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"time"
 )
 
@@ -34,6 +37,30 @@ func (l *List) Delete(i int) error {
 	lst := *l
 	*l = append(lst[:i-1], lst[i:]...)
 	return nil
+}
+
+// Save encodes the List as JSON using the provided file name.
+func (l *List) Save(filename string) error {
+	lst, err := json.MarshalIndent(*l, "", " ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(filename, lst, 0644)
+}
+
+// Get decodes a JSON file into a List.
+func (l *List) Get(filename string) error {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // no errors for non-existant lists
+		}
+		return err
+	}
+	if len(file) == 0 {
+		return nil // no errors for empty lists
+	}
+	return json.Unmarshal(file, l)
 }
 
 // List represents a list of ToDo items.
