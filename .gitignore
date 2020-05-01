@@ -1,0 +1,4 @@
+# binaries, json
+.todo.json
+cmd/todo/todo
+main
