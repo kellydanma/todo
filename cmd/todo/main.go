@@ -9,12 +9,13 @@ import (
 	"github.com/kellydanma/todo"
 )
 
-const todoFileName = ".todo.json"
-
 var (
 	flagTask     *string
 	flagList     *bool
 	flagComplete *int
+
+	// default file name
+	todoFileName = ".todo.json"
 )
 
 func main() {
@@ -25,6 +26,9 @@ func main() {
 	flag.Parse()
 
 	l := &todo.List{}
+	if f := os.Getenv("TODO_FILENAME"); f != "" {
+		todoFileName = f
+	}
 	if err := l.Get(todoFileName); err != nil {
 		log.Fatalf(err.Error())
 	}
