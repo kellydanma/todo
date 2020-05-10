@@ -16,6 +16,7 @@ var (
 	flagAdd      *bool
 	flagList     *bool
 	flagComplete *int
+	flagDelete   *int
 
 	// default file name
 	todoFileName = ".todo.json"
@@ -26,6 +27,7 @@ func main() {
 	flagAdd = flag.Bool("add", false, "add task to todo list")
 	flagList = flag.Bool("list", false, "list all tasks")
 	flagComplete = flag.Int("complete", 0, "mark task as complete")
+	flagDelete = flag.Int("delete", 0, "delete task")
 	flag.Parse()
 
 	l := &todo.List{}
@@ -37,14 +39,28 @@ func main() {
 	}
 
 	switch {
+	case *flagAdd:
+		// add item to todo list
+		task, err := getTask(os.Stdin, flag.Args()...)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		l.Add(task)
+		if err := l.Save(todoFileName); err != nil {
+			log.Fatalf(err.Error())
+		}
 	case *flagList:
 		// list todo items
-		for i, item := range *l {
-			complete := "[ ]"
-			if item.Complete {
-				complete = "[✓]"
+		if len(*l) == 0 {
+			fmt.Printf("no items on your todo list")
+		} else {
+			for i, item := range *l {
+				complete := "[ ]"
+				if item.Complete {
+					complete = "[✓]"
+				}
+				fmt.Printf("%2d. %-30s %s\n", i+1, item.Task, complete)
 			}
-			fmt.Printf("%2d. %-30s %s\n", i+1, item.Task, complete)
 		}
 	case *flagComplete > 0:
 		// mark given item as complete
@@ -54,13 +70,11 @@ func main() {
 		if err := l.Save(todoFileName); err != nil {
 			log.Fatalf(err.Error())
 		}
-	case *flagAdd:
-		// add item to todo list
-		task, err := getTask(os.Stdin, flag.Args()...)
-		if err != nil {
+	case *flagDelete > 0:
+		// delete task
+		if err := l.Delete(*flagDelete); err != nil {
 			log.Fatalf(err.Error())
 		}
-		l.Add(task)
 		if err := l.Save(todoFileName); err != nil {
 			log.Fatalf(err.Error())
 		}
