@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/kellydanma/todo"
 )
 
 var (
-	flagTask     *string
+	flagAdd      *bool
 	flagList     *bool
 	flagComplete *int
 
@@ -20,9 +23,9 @@ var (
 
 func main() {
 	// parse flags
-	flagTask = flag.String("task", "", "task to be added to the todo list")
+	flagAdd = flag.Bool("add", false, "add task to todo list")
 	flagList = flag.Bool("list", false, "list all tasks")
-	flagComplete = flag.Int("complete", 0, "item marked as completed")
+	flagComplete = flag.Int("complete", 0, "mark task as complete")
 	flag.Parse()
 
 	l := &todo.List{}
@@ -51,9 +54,13 @@ func main() {
 		if err := l.Save(todoFileName); err != nil {
 			log.Fatalf(err.Error())
 		}
-	case *flagTask != "":
+	case *flagAdd:
 		// add item to todo list
-		l.Add(*flagTask)
+		task, err := getTask(os.Stdin, flag.Args()...)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		l.Add(task)
 		if err := l.Save(todoFileName); err != nil {
 			log.Fatalf(err.Error())
 		}
@@ -62,4 +69,23 @@ func main() {
 		fmt.Fprintln(os.Stderr, "invalid option")
 		os.Exit(1)
 	}
+}
+
+// getTask obtains new tasks from arguments or STDIN.
+func getTask(r io.Reader, args ...string) (string, error) {
+	// if args were provided, concatenate them & return
+	if len(args) > 0 {
+		return strings.Join(args, " "), nil
+	}
+
+	// otherwise, scan for single input line through reader
+	s := bufio.NewScanner(r)
+	s.Scan()
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+	if len(s.Text()) == 0 {
+		return "", fmt.Errorf("task cannot be blank")
+	}
+	return s.Text(), nil
 }

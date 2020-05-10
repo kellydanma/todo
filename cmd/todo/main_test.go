@@ -47,7 +47,7 @@ func TestTodoCLI(t *testing.T) {
 
 	// test adding tasks
 	t.Run("Add new task", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, "-task", task)
+		cmd := exec.Command(cmdPath, "-add", task)
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
 		}
