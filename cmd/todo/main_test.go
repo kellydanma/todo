@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 )
 
@@ -48,7 +47,15 @@ func TestTodoCLI(t *testing.T) {
 
 	// test adding tasks
 	t.Run("Add new task", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, strings.Split(task, " ")...)
+		cmd := exec.Command(cmdPath, "-task", task)
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	// test completing tasks
+	t.Run("Complete tasks", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-complete=1")
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
 		}
@@ -56,12 +63,12 @@ func TestTodoCLI(t *testing.T) {
 
 	// test listing tasks
 	t.Run("List tasks", func(t *testing.T) {
-		cmd := exec.Command(cmdPath)
+		cmd := exec.Command(cmdPath, "-list")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Fatal(err)
 		}
-		expected := fmt.Sprintf("1. %s\n", task)
+		expected := fmt.Sprintf(" 1. %-30s [✓]\n", task)
 		if expected != string(out) {
 			t.Errorf("Expected %q, got %q instead\n", expected, string(out))
 		}
