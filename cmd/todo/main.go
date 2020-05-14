@@ -13,10 +13,12 @@ import (
 )
 
 var (
-	flagAdd      *bool
-	flagList     *bool
-	flagComplete *int
-	flagDelete   *int
+	flagAdd          *bool
+	flagList         *bool
+	flagComplete     *int
+	flagDelete       *int
+	flagVerbose      *bool
+	flagHideComplete *bool
 
 	// default file name
 	todoFileName = ".todo.json"
@@ -24,10 +26,12 @@ var (
 
 func main() {
 	// parse flags
-	flagAdd = flag.Bool("add", false, "add task to todo list")
-	flagList = flag.Bool("list", false, "list all tasks")
-	flagComplete = flag.Int("complete", 0, "mark task as complete")
-	flagDelete = flag.Int("delete", 0, "delete task")
+	flagAdd = flag.Bool("a", false, "add task to todo list")
+	flagList = flag.Bool("l", false, "list all tasks")
+	flagComplete = flag.Int("c", 0, "mark task as complete")
+	flagDelete = flag.Int("d", 0, "delete task")
+	flagVerbose = flag.Bool("v", false, "enable verbose output")
+	flagHideComplete = flag.Bool("h", false, "hide completed tasks")
 	flag.Parse()
 
 	l := &todo.List{}
@@ -57,9 +61,22 @@ func main() {
 			for i, item := range *l {
 				complete := "[ ]"
 				if item.Complete {
+					if *flagHideComplete {
+						continue
+					}
 					complete = "[✓]"
 				}
-				fmt.Printf("%2d. %-30s %s\n", i+1, item.Task, complete)
+				timeStamp := ""
+				if *flagVerbose {
+					completedAt := "not complete"
+					if item.Complete {
+						completedAt = fmt.Sprintf("completed on %s",
+							item.CompletedAt.Format("2006-01-02"))
+					}
+					timeStamp = fmt.Sprintf(" created on %s, %s",
+						item.CreatedAt.Format("2006-01-02"), completedAt)
+				}
+				fmt.Printf("%2d. %-30s %s%s\n", i+1, item.Task, complete, timeStamp)
 			}
 		}
 	case *flagComplete > 0:
